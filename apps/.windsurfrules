@@ -1,0 +1,52 @@
+# Windsurf Rules for Plan Execution
+
+## Plan File Execution Protocol
+
+When the user requests to execute a plan file (such as `add_undo_plan.md`), follow these steps:
+
+1. **Iterate Over Tasks and Subtasks:**
+    - Go through each task and subtask in the plan file in order.
+    - A task/subtask is considered incomplete if it begins with `[ ]` (not `[x]`).
+
+2. **Decompose as Needed:**
+    - Before executing any task or subtask, check if it has subtasks.
+    - If it does not, estimate its complexity.
+    - If the task is complex or would benefit from further breakdown, add appropriate subtasks in the plan file before execution, then proceed to execute the subtasks.
+    - If it already has subtasks, proceed to execute them in order.
+
+3. **Execute Each Incomplete Task/Subtask:**
+    - For each `[ ]` task/subtask, perform the actions described by that item.
+    - After successfully completing the task/subtask, update the `[ ]` to `[x]` to mark it as complete in the plan file.
+    - Continue to the next task/subtask.
+
+4. **Post-Subtask Review and Parent Task Completion:**
+    - When all subtasks of a parent task are marked as complete, perform a deliberate review of the parent task to determine if anything is missing, incomplete, or could benefit from further action.
+    - If any additional steps are necessary to fully satisfy the parent task, add these as new subtasks in the plan file and execute them before proceeding.
+    - Only mark the parent task as complete (`[x]`) when all required subtasks are complete and the parent task is fully and satisfactorily accomplished.
+
+5. **Continue Until Complete:**
+    - Repeat this process until all tasks and subtasks in the file are marked as `[x]` (complete).
+
+6. **Atomicity:**
+    - Each task/subtask should be completed and marked before moving to the next, to ensure progress is tracked accurately.
+
+7. **User Communication:**
+    - Provide status updates to the user as tasks/subtasks are completed or if any issues are encountered.
+
+## Example
+
+- `[ ] 1. Do X` → Execute X → `[x] 1. Do X`
+- `[ ] 2. Do Y` → Execute Y → `[x] 2. Do Y`
+
+---
+
+**Note:** Only mark a task as `[x]` after it is fully completed. If a task cannot be completed, inform the user and do not mark it as complete, and discontinue further execution.
+
+## Example
+
+- `[ ] 1. Do X` → Execute X → `[x] 1. Do X`
+- `[ ] 2. Do Y` → Execute Y → `[x] 2. Do Y`
+
+---
+
+**Note:** Only mark a task as `[x]` after it is fully completed. If a task cannot be completed, inform the user and do not mark it as complete, and discontinue further execution.
