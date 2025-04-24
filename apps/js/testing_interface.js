@@ -12,7 +12,6 @@ var historyIndex = -1; // Initialize history pointer
 // Cosmetic.
 var EDITION_GRID_HEIGHT = 500;
 var EDITION_GRID_WIDTH = 500;
-var MAX_CELL_SIZE = 100;
 
 // Function to update the enabled/disabled state of Undo/Redo buttons
 function updateUndoRedoButtons() {
@@ -49,6 +48,8 @@ function refreshEditionGrid(jqGrid, dataGrid) {
     setUpEditionGridListeners(jqGrid);
     fitCellsToContainer(jqGrid, dataGrid.height, dataGrid.width, EDITION_GRID_HEIGHT, EDITION_GRID_HEIGHT);
     initializeSelectable();
+    // Reapply dynamic text color after undo/redo or refresh
+    changeSymbolVisibility();
 }
 
 function syncFromEditionGridToDataGrid() {
@@ -576,6 +577,22 @@ function initializeSelectable() {
 $(document).ready(function () {
     resetTask(); // Reset history and update buttons on load
 
+    // Set text color for symbol previews based on background
+    $('#symbol_picker .symbol_preview').each(function() {
+        const $preview = $(this);
+        const bgColor = $preview.css('background-color');
+        const textColor = calculateTextColor(bgColor);
+        $preview.css('color', textColor);
+        // Add some basic styling for the number
+        $preview.css({
+            'display': 'flex',
+            'align-items': 'center',
+            'justify-content': 'center',
+            'font-weight': 'bold',
+            'font-size': '0.8em'
+        });
+    });
+
     $('#symbol_picker').find('.symbol_preview').click(function(event) {
         symbol_preview = $(event.target);
         $('#symbol_picker').find('.symbol_preview').each(function(i, preview) {
@@ -615,11 +632,29 @@ $(document).ready(function () {
     });
 
     $('body').keydown(function(event) {
-        // Copy and paste functionality.
-        if (event.which == 67) {
-            // Press C
+        // --- Undo/Redo --- 
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const undoKeyPressed = (isMac ? event.metaKey : event.ctrlKey) && !event.shiftKey && event.keyCode === 90; // Cmd+Z or Ctrl+Z
+        const redoKeyPressed = (isMac ? event.metaKey : event.ctrlKey) && event.shiftKey && event.keyCode === 90; // Cmd+Shift+Z or Ctrl+Shift+Z
+        const redoYKeyPressed = !isMac && event.ctrlKey && !event.shiftKey && event.keyCode === 89; // Ctrl+Y (Windows/Linux)
 
-            selected = $('.ui-selected');
+        if (undoKeyPressed) {
+            undo();
+            event.preventDefault();
+            return;
+        }
+        if (redoKeyPressed || redoYKeyPressed) {
+            redo();
+            event.preventDefault();
+            return;
+        }
+        // --- End Undo/Redo ---
+        
+        // --- Copy/Paste --- 
+        // Handle C for copy (No Ctrl/Meta)
+        if (!event.ctrlKey && !event.metaKey && event.which == 67) {
+            // Press C
+            selected = $('.edition_grid').find('.ui-selected'); // Target the edition grid specifically
             if (selected.length == 0) {
                 return;
             }
@@ -632,10 +667,11 @@ $(document).ready(function () {
                 COPY_PASTE_DATA.push([x, y, symbol]);
             }
             infoMsg('Cells copied! Select a target cell and press V to paste at location.');
-
+            return;
         }
-        if (event.which == 86) {
-            // Press P
+        // Handle V for paste (No Ctrl/Meta)
+        if (!event.ctrlKey && !event.metaKey && event.which == 86) {
+            // Press V
             if (COPY_PASTE_DATA.length == 0) {
                 errorMsg('No data to paste.');
                 return;
@@ -715,24 +751,29 @@ $(document).ready(function () {
             } else {
                 errorMsg('Can only paste at a specific location; only select *one* cell as paste destination.');
             }
+            return;
+        }
+        // --- End Copy/Paste --- 
+
+        // --- Symbol Selection --- 
+        // Handle number keys 0-9 for symbol selection (No modifiers)
+        if (event.which >= 48 && event.which <= 57 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { // Key codes for 0-9
+            // Check if focus is NOT in an input/textarea to avoid overriding typing
+            if ($('input:focus, textarea:focus').length === 0) { 
+                const symbolNumber = event.which - 48;
+                const symbolPreview = $(`#symbol_picker .symbol_preview[symbol='${symbolNumber}']`);
+                if (symbolPreview.length) {
+                    symbolPreview.click(); // Simulate click to select the symbol
+                    event.preventDefault(); // Prevent default number input behavior
+                }
+            }
+        }
+        // --- End Symbol Selection --- 
+    });
+
+    $('input[type=text][name=size]').on('keydown', function(event) {
+        if (event.keyCode == 13) {
+            resizeOutputGrid();
         }
     });
-});
-
-// Keyboard shortcuts for Undo/Redo
-$(document).on('keydown', function(event) {
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-    const modifier = isMac ? event.metaKey : event.ctrlKey;
-
-    // Undo: Cmd/Ctrl + Z
-    if (modifier && event.keyCode === 90 && !event.shiftKey) { 
-        event.preventDefault(); 
-        undo();
-    }
-    // Redo: Cmd/Ctrl + Shift + Z OR Ctrl + Y
-    else if ((modifier && event.keyCode === 90 && event.shiftKey) || // Cmd/Ctrl + Shift + Z
-             (!isMac && event.ctrlKey && event.keyCode === 89)) {       // Ctrl + Y (non-Mac)
-        event.preventDefault();
-        redo();
-    }
 });

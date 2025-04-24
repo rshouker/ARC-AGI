@@ -1,3 +1,4 @@
+const MAX_CELL_SIZE = 100;
 
 class Grid {
     constructor(height, width, values) {
@@ -72,6 +73,8 @@ function fitCellsToContainer(jqGrid, height, width, containerHeight, containerWi
     size = Math.min(MAX_CELL_SIZE, size);
     jqGrid.find('.cell').css('height', size + 'px');
     jqGrid.find('.cell').css('width', size + 'px');
+    // Adjust font size to fit within cell
+    jqGrid.find('.cell').css('font-size', (size * 0.7) + 'px');
 }
 
 function fillJqGridWithData(jqGrid, dataGrid) {
@@ -117,6 +120,12 @@ function setCellSymbol(cell, symbol) {
     }
     cell.removeClass(classesToRemove);
     cell.addClass('symbol_' + symbol);
+
+    // Determine and set text color based on background
+    const bgColor = cell.css('background-color');
+    const textColor = calculateTextColor(bgColor);
+    cell.css('color', textColor);
+
     // Show numbers if "Show symbol numbers" is checked
     if ($('#show_symbol_numbers').is(':checked')) {
         cell.text(symbol);
@@ -127,12 +136,33 @@ function setCellSymbol(cell, symbol) {
 
 function changeSymbolVisibility() {
     $('.cell').each(function(i, cell) {
+        // Determine and set text color based on background
+        const bgColor = $(cell).css('background-color');
+        const textColor = calculateTextColor(bgColor);
+        $(cell).css('color', textColor);
+        
         if ($('#show_symbol_numbers').is(':checked')) {
             $(cell).text($(cell).attr('symbol'));
         } else {
             $(cell).text('');
         }
     });
+}
+
+function getBrightness(rgb) {
+    // Extract r, g, b values from rgb(r, g, b)
+    const result = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(rgb);
+    if (!result) return 128; // Default brightness if parsing fails
+    const r = parseInt(result[1]);
+    const g = parseInt(result[2]);
+    const b = parseInt(result[3]);
+    // Simple average brightness
+    return (r + g + b) / 3;
+}
+
+function calculateTextColor(backgroundColor) {
+    const brightness = getBrightness(backgroundColor);
+    return brightness < 128 ? 'white' : 'black';
 }
 
 function errorMsg(msg) {
