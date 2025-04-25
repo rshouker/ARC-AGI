@@ -1,3 +1,10 @@
+# General Rules
+
+1. **Code Analysis:**
+    - Always use code_analysis.md to help you find your way around the code.
+2. **Update Code Analysis:**
+    - After making changes to the code, update code_analysis.md to reflect the changes you have made.
+
 # Windsurf Rules for Plan Execution
 
 ## Plan File Execution Protocol
@@ -10,13 +17,15 @@ When the user requests to execute a plan file (such as `add_undo_plan.md`), foll
 
 2. **Decompose as Needed:**
     - Before executing any task or subtask, check if it has subtasks.
-    - If it does not, estimate its complexity.
+    - If it does not, estimate its complexity, use code_analysis.md to help you understand the code.
     - If the task is complex or would benefit from further breakdown, add appropriate subtasks in the plan file before execution, then proceed to execute the subtasks.
     - If it already has subtasks, proceed to execute them in order.
 
 3. **Execute Each Incomplete Task/Subtask:**
     - For each `[ ]` task/subtask, perform the actions described by that item.
+    - Use code_analysis.md to help you find your way around the code.
     - After successfully completing the task/subtask, update the `[ ]` to `[x]` to mark it as complete in the plan file.
+    - update code_analysis.md to reflect the changes you have made.
     - Continue to the next task/subtask.
 
 4. **Post-Subtask Review and Parent Task Completion:**

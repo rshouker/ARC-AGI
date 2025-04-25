@@ -652,13 +652,17 @@ $(document).ready(function () {
         
         // --- Copy/Paste --- 
         // Handle C for copy (No Ctrl/Meta)
-        if (!event.ctrlKey && !event.metaKey && event.which == 67) {
+        if (event.which == 67 && !event.shiftKey && !event.altKey) {
             // Press C
-            selected = $('.edition_grid').find('.ui-selected'); // Target the edition grid specifically
-            if (selected.length == 0) {
-                return;
+            // Determine selection source: output or input grid
+            selected = $('.edition_grid').find('.ui-selected');
+            if (selected.length === 0) {
+                // Try input grid selection
+                selected = $('#evaluation_input').find('.ui-selected');
+                if (selected.length === 0) {
+                    return;
+                }
             }
-
             COPY_PASTE_DATA = [];
             for (var i = 0; i < selected.length; i ++) {
                 x = parseInt($(selected[i]).attr('x'));
@@ -670,7 +674,7 @@ $(document).ready(function () {
             return;
         }
         // Handle V for paste (No Ctrl/Meta)
-        if (!event.ctrlKey && !event.metaKey && event.which == 86) {
+        if (event.which == 86 && !event.shiftKey && !event.altKey) {
             // Press V
             if (COPY_PASTE_DATA.length == 0) {
                 errorMsg('No data to paste.');

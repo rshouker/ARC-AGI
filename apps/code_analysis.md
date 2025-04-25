@@ -41,7 +41,7 @@ These functions, primarily in `js/testing_interface.js` unless noted, handle the
 - **`syncFromEditionGridToDataGrid()`:** Updates the `CURRENT_OUTPUT_GRID` data object by reading the current symbol values from the main interactive output UI grid (`#output_grid .edition_grid`). Uses `copyJqGridToDataGrid`.
 - **`copyJqGridToDataGrid(jqGrid, dataGrid)`:** Helper function to read the `symbol` attribute from each cell DOM element in `jqGrid` and update the corresponding `[i][j]` entry in the `dataGrid.grid` array.
 - **`syncFromDataGridToEditionGrid()`:** Updates the main interactive output UI grid to visually match the current state of the `CURRENT_OUTPUT_GRID` data object. Uses `refreshEditionGrid`.
-- **`setCellSymbol(cell, symbol, ...)`:** Modifies a single cell's appearance (CSS class) and data attribute (`symbol`) in the UI. Handles different modes (preview vs. edition) and potential tool logic (like toggling symbol 0 in edit mode).
+- **`setCellSymbol(cell, symbol, ...)`:** Modifies a single cell's appearance (CSS class) and data attribute (`symbol`) in the UI. Determines and applies an optimal text color (white or black) based on the cell background brightness, adjusts font size to ensure the symbol number fits, and handles different modes (preview vs. edition) and potential tool logic (like toggling symbol 0 in edit mode).
 - **`setUpEditionGridListeners(jqGrid)`:** Attaches event listeners (primarily `click` for drawing/flood fill, potentially `mousedown`, `mouseover`, `mouseup` for drag actions) to the cells within an editable grid (`jqGrid`).
 - **`fitCellsToContainer(jqGrid, height, width)`:** Adjusts the CSS `grid-template-columns` and `grid-template-rows` properties for the `jqGrid` container to ensure the grid cells are displayed correctly according to the specified `height` and `width`.
 - **Undo/Redo Functionality:**
@@ -50,6 +50,7 @@ These functions, primarily in `js/testing_interface.js` unless noted, handle the
   - **`redo()`:** Reapplies a reverted change using its `redoData`, increments `historyIndex`, and refreshes the grid UI.
   - **`updateUndoRedoButtons()`:** Enables or disables the Undo and Redo buttons based on `historyIndex` and `changeHistory.length`.
   - *Keyboard shortcuts:* `Ctrl+Z` / `Cmd+Z` for Undo, `Ctrl+Y` (or `Ctrl+Shift+Z` on Mac) for Redo.
+  - *Symbol selection shortcuts:* Press number keys `0-9` to pick symbols directly from the keyboard.
 - **`resizeOutputGrid(height, width)`:** Resizes the `CURRENT_OUTPUT_GRID` data object by creating a new `Grid` instance and then updates the UI grid by calling `syncFromDataGridToEditionGrid`.
 - **`resetOutputGrid()`:** Resets the `CURRENT_OUTPUT_GRID` data object (typically cloning the corresponding test input grid) and updates the UI grid via `syncFromDataGridToEditionGrid`.
 - **`Grid` Class (`js/common.js`):** The fundamental data structure holding the grid dimensions and the 2D array of symbols. Includes methods for initialization and potentially helper functions.
@@ -59,7 +60,7 @@ These functions, primarily in `js/testing_interface.js` unless noted, handle the
 
 1. **Initialization**
    - On `$(document).ready`, bind event handlers:
-     - Symbol picker clicks, tool switching, file input, keyboard shortcuts (C/V), and grid listeners.
+     - Symbol picker clicks, tool switching, file input, keyboard shortcuts (C/V and number keys `0-9` for symbol selection), and grid listeners.
    - Build initial 3×3 grids for input and output.
 
 2. **Task Loading**
